@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator } from 'react-native';
 
 import styles from './styles';
 
 import api from '../../services/api';
 
 export default function Games(props) {
-  const { route } = props;
+  const { route, navigation } = props;
 
-  const { stageId, championshipId } = route.params;
+  const { stageId, championshipId, stageName } = route.params;
 
   const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    navigation.setOptions({ title: `Jogos - ${stageName}` });
     api
       .get(`${championshipId}/fases/${stageId}`)
       .then((response) => {
@@ -21,15 +23,22 @@ export default function Games(props) {
 
         let newGames = [];
         for (let key in keys) {
-          // chave_01
           for (let game in keys[key]) {
             for (let dataObj in keys[key][game]) {
-              newGames.push(keys[key][game][dataObj]);
+              let data = {
+                chave: key.split('-').pop(),
+                jogo: game,
+                partida_id: keys[key][game][dataObj].partida_id,
+                placar: keys[key][game][dataObj].placar,
+                status: keys[key][game][dataObj].status,
+              };
+              newGames.push(data);
             }
           }
         }
 
         setGames(newGames);
+        setLoading(false);
       })
       .catch((err) => {
         console.log(err);
@@ -38,16 +47,25 @@ export default function Games(props) {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={games}
-        renderItem={({ item }) => (
-          <View style={styles.gameContainer}>
-            <Text>Jogo: {item.placar}</Text>
-            <Text>Status: {item.status}</Text>
-          </View>
-        )}
-        keyExtractor={(item) => `${item.partida_id}`}
-      />
+      {loading ? (
+        <View style={styles.loading}>
+          <ActivityIndicator size='large' color='#0D98BA' animating />
+        </View>
+      ) : (
+        <FlatList
+          data={games}
+          renderItem={({ item }) => (
+            <View style={styles.gameContainer}>
+              <Text>
+                Chave: {item.chave} - Jogo de {item.jogo}
+              </Text>
+              <Text>Jogo: {item.placar}</Text>
+              <Text>Status: {item.status}</Text>
+            </View>
+          )}
+          keyExtractor={(item) => `${item.partida_id}`}
+        />
+      )}
     </View>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 
 import styles from './styles';
 
@@ -12,37 +12,46 @@ export default function ChampionshipStages(props) {
   const { championshipId, championshipName } = route.params;
 
   const [stages, setStages] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api
       .get(`${championshipId}`)
       .then((response) => {
         setStages(response.data.fases);
+        setLoading(false);
       })
       .catch((err) => {
         console.log(err);
       });
   }, []);
 
-  function handleStage(id) {
+  function handleStage(id, stageName) {
     navigation.navigate('Games', {
       championshipId: championshipId,
       stageId: id,
+      stageName: stageName,
     });
   }
 
   return (
     <View style={styles.container}>
       <Text style={styles.h1}>{championshipName}</Text>
-      {stages.map((stage) => (
-        <TouchableOpacity
-          key={stage.fase_id}
-          style={styles.button}
-          onPress={() => handleStage(stage.fase_id)}
-        >
-          <Text>{stage.nome}</Text>
-        </TouchableOpacity>
-      ))}
+      {loading ? (
+        <View style={styles.loading}>
+          <ActivityIndicator size='large' color='#0D98BA' animating />
+        </View>
+      ) : (
+        stages.map((stage) => (
+          <TouchableOpacity
+            key={stage.fase_id}
+            style={styles.button}
+            onPress={() => handleStage(stage.fase_id, stage.nome)}
+          >
+            <Text>{stage.nome}</Text>
+          </TouchableOpacity>
+        ))
+      )}
     </View>
   );
 }
