@@ -20,6 +20,11 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
   },
+  aviso: {
+    color: 'red',
+    textAlign: 'center',
+    width: '100%',
+  },
 });
 
 export default styles;
