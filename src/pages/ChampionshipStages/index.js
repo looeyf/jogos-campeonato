@@ -13,16 +13,12 @@ export default function ChampionshipStages(props) {
 
   const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [championshipInitialized, setChampionshipInitialized] = useState(true);
 
   useEffect(() => {
     api
       .get(`${championshipId}`)
       .then((response) => {
         setStages(response.data.fases);
-        if (stages && stages.length == 0) {
-          setChampionshipInitialized(false);
-        }
         setLoading(false);
       })
       .catch((err) => {
@@ -45,9 +41,7 @@ export default function ChampionshipStages(props) {
         <View style={styles.loading}>
           <ActivityIndicator size='large' color='#0D98BA' animating />
         </View>
-      ) : championshipInitialized ? (
-        <Text style={styles.aviso}>Campeonato não iniciado!</Text>
-      ) : (
+      ) : stages && stages.length > 0 ? (
         stages.map((stage) => (
           <TouchableOpacity
             key={stage.fase_id}
@@ -57,6 +51,8 @@ export default function ChampionshipStages(props) {
             <Text>{stage.nome}</Text>
           </TouchableOpacity>
         ))
+      ) : (
+        <Text style={styles.aviso}>Campeonato não iniciado!</Text>
       )}
     </View>
   );
